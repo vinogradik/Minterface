@@ -1,0 +1,49 @@
+body {
+   background-color: #ccdcff;
+}
+
+h3 p legend {
+	color: #00081a;
+	font-weight: 400; 
+}
+h3 {
+   margin-left: 20px;
+}
+legend {
+	font-size: large;
+}
+fieldset {
+	background-color: #b3cbff;
+	%border-width: 10px;	
+	%border
+}
+.error {
+	color: red;
+}
+tr {
+	background-color: #b3cbff;
+	color: black;
+}
+input {
+	width = 10%;
+}
+select {
+	margin = 10px;
+}
+input[type = submit] {
+	#background-color: #e6eeff;
+	#padding: 5px;
+	margin: 10px;
+	#border-radius: 6px;
+}
+input[type=text]{
+	#background-color: black;
+	#border-radius: 4px;
+}
+table {
+	width: 100%;
+}
+a {
+	color: #00081a;
+	text-decoration: none;
+}

@@ -1,0 +1,3 @@
+RewriteEngine on
+RewriteRule ^test sef.html [L]
+AddType text/css .css
