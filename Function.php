@@ -1,4 +1,21 @@
 <?php
+$Names = array(
+		array("DAYS", "дата"),
+		array("IND", "индекс станции"),
+		array("LAT", "широта"),
+		array("LON", "долгота"),
+		array("TMIN", "t минимальная"),
+		array("TMEAN", "t средняя"),
+		array("TMAX","t максимальная"),
+		array("R", "осадки"),
+	);
+	
+	$Date = array(
+		array("DAY", "день", 1, 31),
+		array("MONTH", "месяц", 1, 12),
+		array("YEAR", "год", 1800, 2100) 
+);
+
 function error_default($place){
 	echo('<p class = "error">Ошибка. Проверьте фильтр "'. $place.'"');
 }
@@ -60,7 +77,7 @@ function ValidateForm($Data) {
 		if(empty($Data['DAY'][0]) && !empty($Data['MONTH'][0])) return error(true, $Names[0][1].': '.$Date[0][1]);
 		if(!empty($Data['DAY'][0]) && empty($Data['MONTH'][0])) return error(true, $Names[0][1].': '.$Date[1][1]);
 		if(empty($Data['DAY'][1]) && !empty($Data['MONTH'][1])) return error(false, $Names[0][1].': '.$Date[0][1]);
-		if(!empty($Data['DAY'][0]) && empty($Data['MONTH'][1])) return error(false, $Names[0][1].': '.$Date[1][1]);
+		if(!empty($Data['DAY'][1]) && empty($Data['MONTH'][1])) return error(false, $Names[0][1].': '.$Date[1][1]);
 	}
 	else 
 		//проверка даты во втором случае
@@ -92,70 +109,70 @@ function ValidateForm($Data) {
 
 
 
-function GenerateQuery($Columns) {
+function GenerateQuery($Data) {
 	Global $Names;
  	Global $Date;
 		
-	if (empty($_POST['Count'])){
-		$sqlquery = "SELECT ".$Columns[0];
-		for ($i = 1; $i < count($Columns); $i++)
-			$sqlquery = $sqlquery.', '.$Columns[$i];
+	if (empty($Data['Count'])){
+		$sqlquery = "SELECT ".$Data['Columns'][0];
+		for ($i = 1; $i < count($Data['Columns']); $i++)
+			$sqlquery = $sqlquery.', '.$Data['Columns'][$i];
 	}
 	else {
-		$sqlquery = "SELECT COUNT(".$Columns[0].')';
-		for ($i = 1; $i < count($Columns); $i++)
-			$sqlquery = $sqlquery.', COUNT('.$Columns[$i].')';
+		$sqlquery = "SELECT COUNT(".$$Data['Columns'][0].')';
+		for ($i = 1; $i < count($Data['Columns']); $i++)
+			$sqlquery = $sqlquery.', COUNT('.$Data['Columns'][$i].')';
 	}
 	$sqlquery = $sqlquery.' FROM STATION_EXT';
 	$Limits = array();
 	$k = 0;
-	if ($_POST['DateType'] == "method1") {
-		if ($_POST[$Date[2][0]][0] != "") {
-			$Limits[$k] = $Date[2][0]."(".$Names[0][0].") >= ".$_POST[$Date[2][0]][0];
+	if ($Data['DateType'] == "method1") {
+		if ($Data[$Date[2][0]][0] != "") {
+			$Limits[$k] = $Date[2][0]."(".$Names[0][0].") >= ".$Data[$Date[2][0]][0];
 				$k++;
 		}
-		if ($_POST[$Date[2][0]][1] != "") {
-			$Limits[$k] = $Date[2][0]."(".$Names[0][0].") <= ".$_POST[$Date[2][0]][1];
+		if ($Data[$Date[2][0]][1] != "") {
+			$Limits[$k] = $Date[2][0]."(".$Names[0][0].") <= ".$Data[$Date[2][0]][1];
 			$k++;
 		}
-		if ($_POST[$Date[0][0]][0] != "" && $_POST[$Date[0][0]][1] != "" 
-			&& day_of_year($_POST['DAY'][0], $_POST['MONTH'][0]) > day_of_year($_POST['DAY'][1], $_POST['MONTH'][1])) 
-			$Limits[$k] = '((MONTH(DAYS) > '.$_POST['MONTH'][0].' || 
-				(MONTH(DAYS) = '.$_POST['MONTH'][0].' AND DAY(DAYS) >= '.$_POST['DAY'][0].')) || 
-				(MONTH(DAYS) < '.$_POST['MONTH'][1].' || 
-				(MONTH(DAYS) = '.$_POST['MONTH'][1].' AND DAY(DAYS) <= '.$_POST['DAY'][1].')))';
+		if ($Data[$Date[0][0]][0] != "" && $Data[$Date[0][0]][1] != "" 
+			&& day_of_year($Data['DAY'][0], $Data['MONTH'][0]) > day_of_year($Data['DAY'][1], $Data['MONTH'][1])) 
+			$Limits[$k] = '((MONTH(DAYS) > '.$Data['MONTH'][0].' || 
+				(MONTH(DAYS) = '.$Data['MONTH'][0].' AND DAY(DAYS) >= '.$Data['DAY'][0].')) || 
+				(MONTH(DAYS) < '.$Data['MONTH'][1].' || 
+				(MONTH(DAYS) = '.$Data['MONTH'][1].' AND DAY(DAYS) <= '.$Data['DAY'][1].')))';
 		else {
-			if ($_POST[$Date[0][0]][0] != "") {
-				$Limits[$k] = "(".$Date[1][0]."(".$Names[0][0].") > ".$_POST[$Date[1][0]][0]." OR (".
-					$Date[1][0]."(".$Names[0][0].") = ".$_POST[$Date[1][0]][0]." AND ".
-					$Date[0][0]."(".$Names[0][0].") >= ".$_POST[$Date[0][0]][0]."))";
+			if ($Data[$Date[0][0]][0] != "") {
+				$Limits[$k] = "(".$Date[1][0]."(".$Names[0][0].") > ".$Data[$Date[1][0]][0]." OR (".
+					$Date[1][0]."(".$Names[0][0].") = ".$Data[$Date[1][0]][0]." AND ".
+					$Date[0][0]."(".$Names[0][0].") >= ".$Data[$Date[0][0]][0]."))";
 					$k++;
 			}
-			if ($_POST[$Date[0][0]][1] != "") {
-				$Limits[$k] = "(".$Date[1][0]."(".$Names[0][0].") < ".$_POST[$Date[1][0]][1]." OR (".
-					$Date[1][0]."(".$Names[0][0].") = ".$_POST[$Date[1][0]][1]." AND ".
-					$Date[0][0]."(".$Names[0][0].") <= ".$_POST[$Date[0][0]][1]."))";
+			if ($Data[$Date[0][0]][1] != "") {
+				$Limits[$k] = "(".$Date[1][0]."(".$Names[0][0].") < ".$Data[$Date[1][0]][1]." OR (".
+					$Date[1][0]."(".$Names[0][0].") = ".$Data[$Date[1][0]][1]." AND ".
+					$Date[0][0]."(".$Names[0][0].") <= ".$Data[$Date[0][0]][1]."))";
 					$k++;
 			}
 		}
 	}
 	else { 
-		if ($_POST[$Date[0][0]][0] != "") {
-			$Limits[$k] = $Names[0][0]." >= '".$_POST[$Date[2][0]][0]."-".$_POST[$Date[1][0]][0]."-".$_POST[$Date[0][0]][0]."'";
+		if ($Data[$Date[0][0]][0] != "") {
+			$Limits[$k] = $Names[0][0]." >= '".$Data[$Date[2][0]][0]."-".$Data[$Date[1][0]][0]."-".$Data[$Date[0][0]][0]."'";
 			$k++;
 		}
-		if ($_POST[$Date[0][0]][1] != "") {
-			$Limits[$k] = $Names[0][0]." <= '".$_POST[$Date[2][0]][1]."-".$_POST[$Date[1][0]][1]."-".$_POST[$Date[0][0]][1]."'";
+		if ($Data[$Date[0][0]][1] != "") {
+			$Limits[$k] = $Names[0][0]." <= '".$Data[$Date[2][0]][1]."-".$Data[$Date[1][0]][1]."-".$Data[$Date[0][0]][1]."'";
 			$k++;
 		}
 	}
 	for ($i = 1; $i < count($Names); $i++) {
-		if ($_POST[$Names[$i][0]][0] != "") {
-			$Limits[$k] = $Names[$i][0].">=".$_POST[$Names[$i][0]][0];
+		if ($Data[$Names[$i][0]][0] != "") {
+			$Limits[$k] = $Names[$i][0].">=".$Data[$Names[$i][0]][0];
 			$k++;
 		}
-		if ($_POST[$Names[$i][0]][1] != "") {
-			$Limits[$k] = $Names[$i][0]."<=".$_POST[$Names[$i][0]][1];
+		if ($Data[$Names[$i][0]][1] != "") {
+			$Limits[$k] = $Names[$i][0]."<=".$Data[$Names[$i][0]][1];
 			$k++;
 		}
 	}
@@ -164,9 +181,7 @@ function GenerateQuery($Columns) {
 		for ($i = 1; $i < count($Limits); $i++)
 			$sqlquery .= " AND ".$Limits[$i];
 	}
-	$filename = $_POST['Output'];
-   if(!empty($filename))
-    	$sqlquery .= " INTO OUTFILE 'temp_output'";//.$filename."'";
+
 	return $sqlquery;			
 }
 	
